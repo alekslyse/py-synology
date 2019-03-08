@@ -242,16 +242,25 @@ class Api:
         return response['data']['camId']
 
     def _video_stream_url(self, camera_id, video_format='mjpeg'):
+        
         api = self._api_info['video_stream']
 
-        return api['url'] + '?' + urllib.parse.urlencode({
+
+        payload = dict({
+            'api': 'SYNO.SurveillanceStation.Camera',
+            'method': 'GetLiveViewPath',
+            'version': '9',
             '_sid': self._sid,
-            'api': api['name'],
-            'method': 'Stream',
-            'version': api['version'],
-            'cameraId': camera_id,
-            'format': video_format,
+            'idList': camera_id
+
         })
+
+        response = self._get_json_with_retry(self._base_url+'/entry.cgi', payload)
+
+        return response['data'][0]['rtspPath']
+
+
+      
 
     def _get(self, url, payload):
         response = requests.get(url, payload, timeout=self._timeout,
